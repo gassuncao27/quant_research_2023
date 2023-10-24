@@ -1,4 +1,5 @@
 import torch
+import chardet
 from datetime import datetime
 
 class LogData:
@@ -11,13 +12,30 @@ class LogData:
         self.maxima = torch.tensor([])
         self.fechamento = torch.tensor([])
 
-    @staticmethod
-    def read_log_and_fill_class(file_path):
+    def guess_file_properties(file_path, num_lines=10):
+        with open(file_path, 'rb') as file:
+            rawdata = file.read()
+            result = chardet.detect(rawdata)
+            encoding = result['encoding']
+        
+        delimiters = [',', ';', '\t', ' ']
+        counts = {delimiter: 0 for delimiter in delimiters}
+
+        with open(file_path, 'r', encoding=encoding, errors="ignore") as file:
+            for _ in range(num_lines):
+                line = file.readline()
+                for delimiter in delimiters:
+                    counts[delimiter] += line.count(delimiter)
+        delimiter = max(counts, key=counts.get)
+        return delimiter, encoding
+
+    # @staticmethod
+    def read_log_and_fill_class(file_path, encoding_str, delimiter_str):
         log_data_obj = LogData()
 
-        with open(file_path, 'r', encoding='UTF-16') as f:
+        with open(file_path, 'r', encoding=encoding_str) as f:            
             for line in f:
-                ativo, data, abertura, minima, maxima, fechamento = line.strip().split(',')
+                ativo, data, abertura, minima, maxima, fechamento = line.strip().split(delimiter_str)
                 log_data_obj.ativo.append(ativo)
                 log_data_obj.data.append(data)
                 log_data_obj.abertura = torch.cat([log_data_obj.abertura, torch.tensor([float(abertura)])])
@@ -29,6 +47,7 @@ class LogData:
         log_data_obj.weekday = [dias_da_semana[date_obj.weekday()] for date_obj in log_data_obj.data]
 
         return log_data_obj
+
     
     def reverse_attributes(self):
         self.data.reverse()

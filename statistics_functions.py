@@ -37,7 +37,7 @@ def print_statistics(tensor1_analise, tensor2_prev):
     correlation_calc = correlation(tensor1_analise, tensor2_prev)
     mean_calc, median_calc, std_calc, q1_calc, q3_calc = statistics(tensor1_analise)
     mean_calc2, median_calc2, std_calc2, q1_calc2, q3_calc2 = statistics(tensor2_prev)    
-    print('### ESTATISTICAS ####', f'Tamanho tensor: {tensor.numel()}')
+    print('### ESTATISTICAS ####', f'Tamanho tensor: {tensor1_analise.numel()}')
     print(f'Correlação Amostras: {round(correlation_calc.item(), 4)}','\n')
     print(f'Media Analise: {round(mean_calc.item(), 4)}')
     print(f'Mediana Analise: {round(median_calc.item(), 4)}')

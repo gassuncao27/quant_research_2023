@@ -1,18 +1,14 @@
-from log_data import LogData
-
-import statistics_functions as stat
-
+import os
+import numpy
 import torch
 import sys
 import matplotlib.pyplot as plt
-
-import statistics_functions
+import statistics_functions as stat
+import strategy_evaluation as st_eval
 
 from scipy import stats
-
-import numpy
-from datetime import datetime
- 
+from dotenv import load_dotenv
+from log_data import LogData 
 
 def equivalence_arrays(array1, array2):
     tensor1 = torch.tensor(array1)
@@ -25,9 +21,13 @@ def equivalence_arrays(array1, array2):
     return tensor1, tensor2
 
 
-## Execução
-file_path = "/Users/gabrielassuncao/CARTOR/quant/quant_research_2023/vale_data.txt"
-log_data = LogData.read_log_and_fill_class(file_path)
+## upload data
+load_dotenv()
+ambiente_local = os.getenv('AMBIENTE_WIN')
+data_path = 'vale_data.txt'
+file_path = ambiente_local + data_path
+delimiter, encoding = LogData.guess_file_properties(file_path)
+log_data = LogData.read_log_and_fill_class(file_path, encoding, delimiter)
 LogData.reverse_attributes(log_data)
 
 # estudo
@@ -49,63 +49,17 @@ for i in range (len(log_data.weekday)):
 
 print(len(retornos_analisar))
 print(len(retornos_previsto))
-
-# transformando listas em tensor
 retornos_analisar, retornos_previstos = equivalence_arrays(retornos_analisar, retornos_previsto)
-# retornos_previstos = torch.tensor(retornos_previsto)
-# retornos_analisar = torch.tensor(retornos_previsto)
-
-# plt.plot(log_data.fechamento, color='blue')
-# plt.title('Scatter plot entre tensor1 e tensor2')
-# plt.xlabel('tensor1')
-# plt.ylabel('tensor2')
-# plt.show()
-
-# Calculando estatisticas:
-correlacao_bruta = stat.correlation(retornos_analisar, retornos_previstos)
-mean_analise, median_analise, std_analise, q1_analise, q3_analise = stat.statistics(retornos_analisar)
-mean_previstos, median_previstos, std_previstos, q1_previstos, q3_previstos = stat.statistics(retornos_previstos)
-
-print('### ESTATISTICAS ####', f'Tamanho população: {retornos_previstos.numel()}')
-print(f'Correlação Amostras: {round(correlacao_bruta.item(), 4)}','\n')
-print(f'Media Analise: {round(mean_analise.item(), 4)}')
-print(f'Mediana Analise: {round(median_analise.item(), 4)}')
-print(f'Desvio Padrao Analise: {round(std_analise.item(), 4)}')
-print(f'Quartil 1 Analise: {round(q1_analise.item(), 4)}')
-print(f'Quartil 4 Analise: {round(q3_analise.item(), 4)}', '\n')
-print(f'Media Previsão: {round(mean_previstos.item(), 4)}')
-print(f'Mediana Previsão: {round(median_previstos.item(), 4)}')
-print(f'Desvio Padrao Previsão: {round(std_previstos.item(), 4)}')
-print(f'Quartil 1 Previsão: {round(q1_previstos.item(), 4)}')
-print(f'Quartil 4 Previsão: {round(q3_previstos.item(), 4)}')
-print('### ----------- ###\n')
-
+# stat.print_statistics(retornos_analisar, retornos_previstos)
 # Amostras
+print('TESTE COM... \nAnalise com amostra onde retornos semanais < 0\n')
 mask = retornos_analisar < 0
 tensorA = retornos_analisar[mask]
 tensorB = retornos_previstos[mask]
+stat.print_statistics(tensorA, tensorB)
 
-# Calculando estatisticas:
-correlacao_bruta = stat.correlation(tensorA, tensorB)
-mean_analise, median_analise, std_analise, q1_analise, q3_analise = stat.statistics(tensorA)
-mean_previstos, median_previstos, std_previstos, q1_previstos, q3_previstos = stat.statistics(tensorB)
-
-print('### ESTATISTICAS - AMOSTRA 1 ####', f'Tamanho amostra: {tensorA.numel()}')
-print(f'Correlação Amostras: {round(correlacao_bruta.item(), 4)}','\n')
-print(f'Media Analise: {round(mean_analise.item(), 4)}')
-print(f'Mediana Analise: {round(median_analise.item(), 4)}')
-print(f'Desvio Padrao Analise: {round(std_analise.item(), 4)}')
-print(f'Quartil 1 Analise: {round(q1_analise.item(), 4)}')
-print(f'Quartil 4 Analise: {round(q3_analise.item(), 4)}', '\n')
-print(f'Media Previsão: {round(mean_previstos.item(), 4)}')
-print(f'Mediana Previsão: {round(median_previstos.item(), 4)}')
-print(f'Desvio Padrao Previsão: {round(std_previstos.item(), 4)}')
-print(f'Quartil 1 Previsão: {round(q1_previstos.item(), 4)}')
-print(f'Quartil 4 Previsão: {round(q3_previstos.item(), 4)}')
-print('### ----------- ###\n')
-
- 
-print(f'Teste de hipótese da Correlação {stat.hypothesis_test_correlation(retornos_analisar, retornos_previstos)}')
+correl, p_value = stat.hypothesis_test_correlation(retornos_analisar, retornos_previstos)
+print(f'Visualized correlation {round(correl, 4)} and p-value is {round(p_value, 6)}\n')
 
 
 pl = [100]
@@ -117,6 +71,14 @@ for i in range(retornos_previstos.numel()):
     else:
         pl.append( pl[x] * ( 1 + retornos_previstos[i].item() ) )
         x+=1
+
+
+print('\n STRATEGY EVALUATION \n')
+print(f'Total Return {st_eval.total_return(pl)}')
+print(f'Profit Factor {st_eval.profit_factor(pl)}')
+print(f'Trade Accuracy {st_eval.percentage_positive_trades(pl)}')
+print(f'Maximum Drawndown {st_eval.max_drawdown(pl)}')
+
 
 plt.plot(pl, color='blue')
 plt.title('Scatter plot entre tensor1 e tensor2')
