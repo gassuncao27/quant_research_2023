@@ -1,12 +1,18 @@
 import requests
 import json
 import time
-
 import sys
+import os
+
+from dotenv import load_dotenv
 
 ticker_list = ['VALE3','PETR4','ITUB4','BBDC4','BBAS3','ELET3', 'BOVA11', 
                'B3SA3','ABEV3','WEGE3','ITSA4','RENT3','PRIO3','SUZB3','BPAC11','RADL3']
+# ticker_list = ['VALE3']
 
+load_dotenv()
+endpoint = os.getenv('ENDPOINT')
+token = os.getenv('TOKEN')
 
 # baixar dados api
 print(len(ticker_list))
@@ -17,14 +23,12 @@ for ticker in ticker_list:
             "period_init": "2018-10-20",
             "period_end": "2023-10-20"
         }
-
-    endpoint = 'https://api.dadosdemercado.com.br/v1'
-    token = '8eba33dfe1829adc8bcf8cad4538bc41'
+        
     headers = { 'Authorization': f'Bearer {token}' }
     route = f"/tickers/{ticker}/quotes"
 
     # print(endpoint+route)
-    response= requests.get(endpoint + route, headers=headers, params=parameters)
+    response= requests.get(str(endpoint) + route, headers=headers, params=parameters)
     time.sleep(1)
     try:
         json_response = json.loads(response.text)
