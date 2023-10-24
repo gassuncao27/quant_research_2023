@@ -1,63 +1,36 @@
+from log_data import LogData
+
+import statistics_functions as stat
+
 import torch
-import warnings
+import sys
 import matplotlib.pyplot as plt
 
+import statistics_functions
+
+from scipy import stats
+
+import numpy
 from datetime import datetime
+ 
 
-class LogData:
-    def __init__(self):
-        self.data = []        
-        self.weekday = []
-        self.ativo = []
-        self.abertura = torch.tensor([])
-        self.minima = torch.tensor([])
-        self.maxima = torch.tensor([])
-        self.fechamento = torch.tensor([])
-
-    @staticmethod
-    def read_log_and_fill_class(file_path):
-        log_data_obj = LogData()
-
-        with open(file_path, 'r', encoding='UTF-16') as f:
-            for line in f:
-                ativo, data, abertura, minima, maxima, fechamento = line.strip().split(',')
-                log_data_obj.ativo.append(ativo)
-                log_data_obj.data.append(data)
-                log_data_obj.abertura = torch.cat([log_data_obj.abertura, torch.tensor([float(abertura)])])
-                log_data_obj.minima = torch.cat([log_data_obj.minima, torch.tensor([float(minima)])])
-                log_data_obj.maxima = torch.cat([log_data_obj.maxima, torch.tensor([float(maxima)])])                
-                log_data_obj.fechamento = torch.cat([log_data_obj.fechamento, torch.tensor([float(fechamento)])])
-        log_data_obj.data = [datetime.strptime(date_str, '%Y.%m.%d %H:%M:%S').date() for date_str in log_data_obj.data]       
-        dias_da_semana = ['segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado', 'domingo']
-        log_data_obj.weekday = [dias_da_semana[date_obj.weekday()] for date_obj in log_data_obj.data]
-
-        return log_data_obj
-    
-    def reverse_attributes(self):
-        self.data.reverse()
-        self.weekday.reverse()
-        self.ativo.reverse()
-        self.abertura = torch.flip(self.abertura, [0])
-        self.minima = torch.flip(self.minima, [0])
-        self.maxima = torch.flip(self.maxima, [0])
-        self.fechamento = torch.flip(self.fechamento, [0])        
+def equivalence_arrays(array1, array2):
+    tensor1 = torch.tensor(array1)
+    tensor2 = torch.tensor(array2)
+    if tensor1.numel() > tensor2.numel():
+        tensor1 = tensor1[:tensor2.numel()]
+    elif tensor1.numel() < tensor2.numel(): 
+        print('ERROR - verify array composition and size')
+        sys.exit()
+    return tensor1, tensor2
 
 
 ## Execução
-# warnings.filterwarnings("ignore")
-file_path = "/Users/gabrielassuncao/CARTOR/quant/quant_research_2023/ibov_data.txt"
+file_path = "/Users/gabrielassuncao/CARTOR/quant/quant_research_2023/vale_data.txt"
 log_data = LogData.read_log_and_fill_class(file_path)
 LogData.reverse_attributes(log_data)
 
-# print(log_data.data[2])
-# print(log_data.ativo[2])
-# print(log_data.abertura[2].item())
-# print(log_data.minima[2].item())
-# print(log_data.maxima[2].item())
-# print(log_data.fechamento[:10])
-# print(log_data.weekday[:10])
-
-# definir valores de retorno a serem analisados e previstos
+# estudo
 retornos_analisar = []
 retornos_previsto = []
 chave_loop = False
@@ -73,31 +46,80 @@ for i in range (len(log_data.weekday)):
                 retornos_previsto.append(log_data.fechamento[i].item() / log_data.fechamento[i-1].item() - 1)
                 chave_loop = False
 
+
+print(len(retornos_analisar))
+print(len(retornos_previsto))
+
 # transformando listas em tensor
-retornos_previstos = torch.tensor(retornos_previsto)
-retornos_analisar = torch.tensor(retornos_analisar)
-retornos_analisar = retornos_analisar[:-1]
+retornos_analisar, retornos_previstos = equivalence_arrays(retornos_analisar, retornos_previsto)
+# retornos_previstos = torch.tensor(retornos_previsto)
+# retornos_analisar = torch.tensor(retornos_previsto)
 
-
-print(retornos_previstos.numel())
-print(retornos_analisar.numel())
-
-# # print(retornos_analisar)
-# # # Crie o gráfico
-# plt.figure(figsize=(12, 6))  # Defina o tamanho do gráfico
-# plt.plot(retornos_previsto)
-# plt.title('Preço de Abertura ao Longo do Tempo')
-# plt.xlabel('Data')
-# plt.ylabel('Preço de Abertura')
-# # plt.legend()
-# plt.grid(True)
-# # plt.tight_layout()
-
-# # Salve o gráfico como um arquivo .png
-# # plt.savefig('/Users/gabrielassuncao/Desktop/preco_abertura.png')
-
-# # Mostre o gráfico
+# plt.plot(log_data.fechamento, color='blue')
+# plt.title('Scatter plot entre tensor1 e tensor2')
+# plt.xlabel('tensor1')
+# plt.ylabel('tensor2')
 # plt.show()
 
+# Calculando estatisticas:
+correlacao_bruta = stat.correlation(retornos_analisar, retornos_previstos)
+mean_analise, median_analise, std_analise, q1_analise, q3_analise = stat.statistics(retornos_analisar)
+mean_previstos, median_previstos, std_previstos, q1_previstos, q3_previstos = stat.statistics(retornos_previstos)
+
+print('### ESTATISTICAS ####', f'Tamanho população: {retornos_previstos.numel()}')
+print(f'Correlação Amostras: {round(correlacao_bruta.item(), 4)}','\n')
+print(f'Media Analise: {round(mean_analise.item(), 4)}')
+print(f'Mediana Analise: {round(median_analise.item(), 4)}')
+print(f'Desvio Padrao Analise: {round(std_analise.item(), 4)}')
+print(f'Quartil 1 Analise: {round(q1_analise.item(), 4)}')
+print(f'Quartil 4 Analise: {round(q3_analise.item(), 4)}', '\n')
+print(f'Media Previsão: {round(mean_previstos.item(), 4)}')
+print(f'Mediana Previsão: {round(median_previstos.item(), 4)}')
+print(f'Desvio Padrao Previsão: {round(std_previstos.item(), 4)}')
+print(f'Quartil 1 Previsão: {round(q1_previstos.item(), 4)}')
+print(f'Quartil 4 Previsão: {round(q3_previstos.item(), 4)}')
+print('### ----------- ###\n')
+
+# Amostras
+mask = retornos_analisar < 0
+tensorA = retornos_analisar[mask]
+tensorB = retornos_previstos[mask]
+
+# Calculando estatisticas:
+correlacao_bruta = stat.correlation(tensorA, tensorB)
+mean_analise, median_analise, std_analise, q1_analise, q3_analise = stat.statistics(tensorA)
+mean_previstos, median_previstos, std_previstos, q1_previstos, q3_previstos = stat.statistics(tensorB)
+
+print('### ESTATISTICAS - AMOSTRA 1 ####', f'Tamanho amostra: {tensorA.numel()}')
+print(f'Correlação Amostras: {round(correlacao_bruta.item(), 4)}','\n')
+print(f'Media Analise: {round(mean_analise.item(), 4)}')
+print(f'Mediana Analise: {round(median_analise.item(), 4)}')
+print(f'Desvio Padrao Analise: {round(std_analise.item(), 4)}')
+print(f'Quartil 1 Analise: {round(q1_analise.item(), 4)}')
+print(f'Quartil 4 Analise: {round(q3_analise.item(), 4)}', '\n')
+print(f'Media Previsão: {round(mean_previstos.item(), 4)}')
+print(f'Mediana Previsão: {round(median_previstos.item(), 4)}')
+print(f'Desvio Padrao Previsão: {round(std_previstos.item(), 4)}')
+print(f'Quartil 1 Previsão: {round(q1_previstos.item(), 4)}')
+print(f'Quartil 4 Previsão: {round(q3_previstos.item(), 4)}')
+print('### ----------- ###\n')
+
+ 
+print(f'Teste de hipótese da Correlação {stat.hypothesis_test_correlation(retornos_analisar, retornos_previstos)}')
 
 
+pl = [100]
+x=0
+for i in range(retornos_previstos.numel()):
+    if retornos_analisar[i].item() > 0:
+        pl.append( pl[x] * ( 1 + retornos_previstos[i].item() * -1) )        
+        x+=1
+    else:
+        pl.append( pl[x] * ( 1 + retornos_previstos[i].item() ) )
+        x+=1
+
+plt.plot(pl, color='blue')
+plt.title('Scatter plot entre tensor1 e tensor2')
+plt.xlabel('tensor1')
+plt.ylabel('tensor2')
+plt.show()
