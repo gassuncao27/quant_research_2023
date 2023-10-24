@@ -1,5 +1,8 @@
 import torch
 import chardet
+
+import numpy as np
+
 from datetime import datetime
 
 class LogData:
@@ -57,3 +60,42 @@ class LogData:
         self.minima = torch.flip(self.minima, [0])
         self.maxima = torch.flip(self.maxima, [0])
         self.fechamento = torch.flip(self.fechamento, [0])        
+
+
+
+
+
+class StockData:
+    def __init__(self, file_path):
+        # Ler os dados
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
+
+        # Processar os dados
+        data = [line.strip().split(', ') for line in lines]
+
+        # Obter listas únicas de datas e ativos mantendo a ordem
+        self.tickers = []
+        self.dates = []
+        for item in data:
+            ticker, date, _ = item
+            if ticker not in self.tickers:
+                self.tickers.append(ticker)
+            if date not in self.dates:
+                self.dates.append(date)
+
+        # Criar matriz de preços
+        self.price_matrix = np.zeros((len(self.dates), len(self.tickers)))
+        
+        # Preencher a matriz de preços
+        for item in data:
+            ticker, date, price = item
+            row_idx = self.dates.index(date)
+            col_idx = self.tickers.index(ticker)
+            self.price_matrix[row_idx][col_idx] = float(price)
+    
+    def display(self):
+        print("Tickers:", self.tickers)
+        print("Dates:", self.dates)
+        print("Price Matrix:")
+        print(self.price_matrix)
