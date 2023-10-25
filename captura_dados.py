@@ -20,7 +20,7 @@ data = {}
 for ticker in ticker_list:
     print(ticker)
     parameters = {
-            "period_init": "2015-10-20",
+            "period_init": "2020-04-20",
             "period_end": "2023-10-20"
         }
         
@@ -43,7 +43,7 @@ for ticker in ticker_list:
         print(e.args)
 
 # arquivo txt
-with open('acoes_precos2.txt', 'w') as file:
+with open('acoes_precos4.txt', 'w') as file:
     for ticker, values in data.items():
         if values:  # verifica se os valores não são None
             for date, close_price in values.items():
