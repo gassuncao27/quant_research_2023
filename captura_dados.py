@@ -7,8 +7,7 @@ import os
 from dotenv import load_dotenv
 
 ticker_list = ['VALE3','PETR4','ITUB4','BBDC4','BBAS3','ELET3', 'BOVA11', 
-               'B3SA3','ABEV3','WEGE3','ITSA4','RENT3','PRIO3','SUZB3','BPAC11','RADL3']
-# ticker_list = ['VALE3']
+               'ABEV3','WEGE3','ITSA4','RENT3','PRIO3','RADL3']
 
 load_dotenv()
 endpoint = os.getenv('ENDPOINT')
@@ -20,7 +19,7 @@ data = {}
 for ticker in ticker_list:
     print(ticker)
     parameters = {
-            "period_init": "2020-04-20",
+            "period_init": "2013-04-20",
             "period_end": "2023-10-20"
         }
         
@@ -43,7 +42,7 @@ for ticker in ticker_list:
         print(e.args)
 
 # arquivo txt
-with open('acoes_precos4.txt', 'w') as file:
+with open('acoes_precos5.txt', 'w') as file:
     for ticker, values in data.items():
         if values:  # verifica se os valores não são None
             for date, close_price in values.items():

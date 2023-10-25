@@ -1,3 +1,7 @@
+
+
+
+
 def calculate_return(start_price, end_price):
     return end_price / start_price - 1
 

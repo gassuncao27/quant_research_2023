@@ -129,17 +129,17 @@ for i in range(10, len(weekdays)): # len(weekdays)): # loop passando dia a dia
 
         if stock_data.price_matrix[i-6, i2] != 0:
 
-            if weekdays[i] == 'sexta': # calcular o retorno da semana de sexta a quinta
+            # if weekdays[i] == 'sexta': # calcular o retorno da semana de sexta a quinta
 
-                weekly_return = backtest.calculate_weekly_return(stock_data.price_matrix[i-5, i2], stock_data.price_matrix[i-1, i2])
-                if weekly_return < -0.01: 
-                    capital_alocacao[i, i2], cash = backtest.simple_update_capital(cash, "buy")
-                elif  weekly_return > 0.01: 
-                    capital_alocacao[i, i2], cash = backtest.simple_update_capital(cash, "sell")    
+            #     weekly_return = backtest.calculate_return(stock_data.price_matrix[i-5, i2], stock_data.price_matrix[i-1, i2])
+            #     if weekly_return < -0.01: 
+            #         capital_alocacao[i, i2], cash = backtest.simple_update_capital(cash, "sell")
+            #     elif  weekly_return > 0.01: 
+            #         capital_alocacao[i, i2], cash = backtest.simple_update_capital(cash, "buy")    
             
-            elif weekdays[i] == 'segunda':  # calcular o retorno da semana de sexta a sexta
+            if weekdays[i] == 'segunda':  # calcular o retorno da semana de sexta a sexta
 
-                weekly_return = backtest.calculate_weekly_return(stock_data.price_matrix[i-6, i2], stock_data.price_matrix[i-1, i2])
+                weekly_return = backtest.calculate_return(stock_data.price_matrix[i-6, i2], stock_data.price_matrix[i-1, i2])
                 if weekly_return < -0.01: 
                     capital_alocacao[i, i2], cash = backtest.simple_update_capital(cash, "sell")   
                 elif  weekly_return > 0.01: 
@@ -164,12 +164,6 @@ for i, day in enumerate(stock_data.dates[1:], start=1):
             resultado_alocacao[i, i2] = position_ticker*day_return
 
     equity.append((np.sum(resultado_alocacao[i, :])+1) * equity[i-1])
-
-# print(capital_alocacao[123,:])
-# print(resultado_alocacao[123,:])
-# print(np.sum(resultado_alocacao[123,:]))
-# print(100*(1+np.sum(resultado_alocacao[123,:])))
-# print(capital_alocacao[:40])  
 
 print(len(stock_data.dates))
 print(len(equity))
