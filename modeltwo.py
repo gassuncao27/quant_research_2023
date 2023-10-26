@@ -43,15 +43,15 @@ for i in range(10, len(weekdays)):
 
     for i2 in range(len(stock_data.tickers)):
         if stock_data.price_matrix[i-6, i2] != 0:
-            if weekdays[i] == 'segunda': 
-                weekly_return = backtest.calculate_return(stock_data.price_matrix[i-6, i2], stock_data.price_matrix[i-1, i2])
-                if weekly_return < -0.01: 
-                    capital_alocacao[i, i2], cash = backtest.simple_update_capital(cash, "buy")   
-            
-            # if weekdays[i] == 'sexta': 
-            #     weekly_return = backtest.calculate_return(stock_data.price_matrix[i-5, i2], stock_data.price_matrix[i-1, i2])
+            # if weekdays[i] == 'segunda': 
+            #     weekly_return = backtest.calculate_return(stock_data.price_matrix[i-6, i2], stock_data.price_matrix[i-1, i2])
             #     if weekly_return < -0.01: 
             #         capital_alocacao[i, i2], cash = backtest.simple_update_capital(cash, "buy")   
+            
+            if weekdays[i] == 'sexta': 
+                weekly_return = backtest.calculate_return(stock_data.price_matrix[i-5, i2], stock_data.price_matrix[i-1, i2])
+                if weekly_return < -0.01: 
+                    capital_alocacao[i, i2], cash = backtest.simple_update_capital(cash, "buy")   
             
             if cash < 0:
                 print('SYSTEM ERROR - cash out of reality')
@@ -69,9 +69,6 @@ for i in range(1, len(stock_data.dates)-return_upfront):
             resultado_alocacao[i, i2] = position_ticker*day_return
 
     equity.append((np.sum(resultado_alocacao[i, :])) * equity[i-1] + equity[i-1])
-
-# print(len(stock_data.dates))
-# print(len(equity))
 
 plt.plot(equity, color='blue')
 plt.title('Scatter plot entre tensor1 e tensor2')
