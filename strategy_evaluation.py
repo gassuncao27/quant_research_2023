@@ -1,7 +1,7 @@
 # Indicators - strategy evaluation
 
 def total_return(prices):
-    return round((prices[-1] / prices[0]) - 1, 4)
+    return round((prices[-1] / prices[0]) - 1, 2)
 
 def annualized_return(prices, periods_per_year):
     total_periods = len(prices) - 1
@@ -34,7 +34,7 @@ def profit_factor(equity):
     if gross_loss == 0:
         return float('inf') if gross_profit > 0 else 0
     
-    return gross_profit / gross_loss
+    return round(gross_profit / gross_loss, 2)
 
 def percentage_positive_trades(equity):
     trades = []
@@ -42,7 +42,7 @@ def percentage_positive_trades(equity):
         trades.append(equity[i]/ equity[i-1]-1)
 
     positive_trades = sum(1 for trade in trades if trade > 0)
-    return positive_trades / len(trades) * 100
+    return round(positive_trades / len(trades) * 100, 2)
 
 def max_drawdown(prices):
     peak = prices[0]
@@ -53,4 +53,4 @@ def max_drawdown(prices):
         dd = (peak - price) / peak
         if dd > max_dd:
             max_dd = dd
-    return round(max_dd, 4)
+    return round(max_dd, 2)
