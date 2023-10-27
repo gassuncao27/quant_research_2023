@@ -1,5 +1,6 @@
 
 import numpy as np
+import pandas as pd
 
 
 def calculate_return(start_price, end_price):
@@ -24,3 +25,13 @@ def bollinger_bands(prices: np.array, window: int, num_std: float=2) -> (np.arra
     lower_band = ma - (rolling_std * num_std)
     
     return ma, upper_band, lower_band
+
+def cdidata_extract(cdidata_path):
+    
+    df = pd.read_excel('cdi_historico.xlsx', engine='openpyxl')
+    array = df.iloc[:, :2].values
+    months = [item.month for item in array[:, 0]]
+    years = [item.year for item in array[:, 0]]
+    array = np.column_stack((array, months, years))
+
+    return array
