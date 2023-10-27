@@ -14,8 +14,8 @@ import strategy_evaluation as st_eval
 load_dotenv()
 ambiente_local = os.getenv('AMBIENTE_WIN')
 # data_path = 'acoes_precos2.txt'
-data_path = 'acoes_precos_last.txt'
-# data_path = 'acoes_precos_poscovid.txt'
+# data_path = 'acoes_precos_last.txt'
+data_path = 'acoes_precos_cartor.txt'
 
 file_path = ambiente_local + data_path
 stock_data = StockData(file_path)
@@ -35,13 +35,13 @@ contagem = np.zeros(stock_data.price_matrix.shape[1])
 capital_alocacao = np.zeros((stock_data.price_matrix.shape[0], stock_data.price_matrix.shape[1] + 1))
 resultado_alocacao = np.zeros((stock_data.price_matrix.shape[0], stock_data.price_matrix.shape[1] + 1))
 capital_alocacao[:, -1] = 1
-equity =[100]
+
 
 # estratégia = comprar na segunda ou na sexta feira e permanecer por x dias se a ação cair x % nos x dias anteriores
 retorno_treshold = 0.01
-periodo_position = input("Digite um número inteiro: ")
+periodo_position = input("Nr de dias posicionado: ")
+cash = 1
 for i, day in enumerate(stock_data.dates):
-    cash = 1
     for i2, ticker in enumerate(stock_data.tickers):
 
         if stock_data.price_matrix[i-5, i2] != 0:
@@ -60,15 +60,17 @@ for i, day in enumerate(stock_data.dates):
                     contagem[i2] = 0
             else:
                 continue
-
-            if cash < 0:
-                print('SYSTEM ERROR - cash out of reality')
-                print(cash)
-                sys.exit()
-            else:
-                capital_alocacao[i, -1] = cash
+    if cash < 0:
+        print('SYSTEM ERROR - cash out of reality')
+        print(cash)
+        sys.exit()
+    else:
+        cash = 1 - np.sum(capital_alocacao[i, :-1])
+        capital_alocacao[i, -1] = cash
+print(capital_alocacao[30:60, 0:6])                
 
 # Building Equity Curve
+equity =[100]
 for i, day in enumerate(stock_data.dates[1:], start=1):
     for i2, ticker in enumerate(stock_data.tickers):
         if stock_data.price_matrix[i-1, i2] != 0: 
@@ -92,6 +94,17 @@ for i, day in enumerate(stock_data.dates[1:], start=1):
     equity_cash.append((np.sum(resultado_alocacao[i, :])) * equity_cash[i-1] + equity_cash[i-1])
 
 
+# Building Equity Curve - Benchmark
+equity_benchmark =[100]
+for i, day in enumerate(stock_data.dates[1:], start=1):
+    day_return = backtest.calculate_return(stock_data.price_matrix[i-1, 6], stock_data.price_matrix[i, 6])
+    equity_benchmark.append(day_return * equity_benchmark[i-1] + equity_benchmark[i-1])
+
+# print('Dimensionando o bova 11')
+# print(len(equity_benchmark))
+# print(len(equity))
+# print(len(equity_cash))
+
 print('\n STRATEGY EVALUATION \n')
 print(f'Total Return Benchmark {st_eval.total_return(stock_data.price_matrix[:,6])}')
 print(f'Profit Factor Benchmark {st_eval.profit_factor(stock_data.price_matrix[:,6])}')
@@ -110,9 +123,9 @@ print(f'Maximum Drawndown with cash {st_eval.max_drawdown(equity_cash)}\n')
 
 equity = np.array(equity)
 equity_cash = np.array(equity_cash)
-result_column_stack = np.column_stack((equity, equity_cash))
+result_column_stack = np.column_stack((equity, equity_cash, equity_benchmark))
 
-colors = ['blue', 'green']  
+colors = ['blue', 'green', 'red']  
 plt.figure(figsize=(10,6))
 
 for i, color in enumerate(colors):
@@ -122,3 +135,5 @@ plt.xlabel('Índice')
 plt.ylabel('Valor')
 plt.legend() 
 plt.show()
+
+# colocar data no grafico de simulacao
