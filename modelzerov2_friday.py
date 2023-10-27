@@ -12,14 +12,21 @@ import strategy_evaluation as st_eval
 
 ## upload data
 load_dotenv()
-ambiente_local = os.getenv('AMBIENTE_WIN')
+ambiente_local = os.getenv('AMBIENTE_MAC')
+datapath_cdi = 'cdi_historico.xlsx'
 # data_path = 'acoes_precos2.txt'
-# data_path = 'acoes_precos_last.txt'
-data_path = 'acoes_precos_cartor.txt'
+data_path = 'acoes_precos_last.txt'
+# data_path = 'acoes_precos_cartor.txt'
 
+cdi_data = backtest.cdidata_extract(ambiente_local+datapath_cdi)
 file_path = ambiente_local + data_path
 stock_data = StockData(file_path)
 weekdays = [StockData.date_to_weekday(date) for date in stock_data.dates]
+
+print('TESTES')
+print(cdi_data[0:13,:])
+print(type(cdi_data))   
+print(type(stock_data.dates[0]))
 
 assets_trading = 'Ativos backtest: '
 for ticker in stock_data.tickers:
@@ -28,7 +35,7 @@ for ticker in stock_data.tickers:
 print(assets_trading, '\n')
 print('Inicio Backtest: ', stock_data.dates[0])
 print('Fim do Backtest: ', stock_data.dates[-1])
-print('Return Benchmark _ Strategy Long Bova11: ', stock_data.price_matrix[-1,6]/ stock_data.price_matrix[0,6] - 1,'\n')
+print('Return Benchmark _ Strategy Long Bova11: ', round( stock_data.price_matrix[-1,6]/ stock_data.price_matrix[0,6] - 1, 2),'\n')
 
 # backtest
 contagem = np.zeros(stock_data.price_matrix.shape[1])
@@ -81,11 +88,18 @@ for i, day in enumerate(stock_data.dates[1:], start=1):
 
 # Building Equity Curve with cash
 equity_cash =[100]
+date_structure = backtest.datestring_tostruct(stock_data.dates)
 for i, day in enumerate(stock_data.dates[1:], start=1):
     for i2 in range(capital_alocacao.shape[1]):
-        if i2 == (capital_alocacao.shape[1]-1):
+        if i2 == (capital_alocacao.shape[1]-1): # if it is cash
+    
+            # print(f'mês: {date_structure[i,1]}', f'ano: {date_structure[i,2]}')
+            linhas_correspondentes = cdi_data[(cdi_data[:, 2] == date_structure[i,1]) & (cdi_data[:, 3] == date_structure[i,2])]
+            # print(linhas_correspondentes)
+            # print(linhas_correspondentes[0][1])    
+
             position_ticker = capital_alocacao[i, i2]
-            day_return = 1.05**(1/252)-1
+            day_return = (linhas_correspondentes[0][1]+1)**(1/252)-1
             resultado_alocacao[i, i2] = position_ticker*day_return
         elif stock_data.price_matrix[i-1, i2] != 0: 
             position_ticker = capital_alocacao[i, i2]
@@ -93,18 +107,13 @@ for i, day in enumerate(stock_data.dates[1:], start=1):
             resultado_alocacao[i, i2] = position_ticker*day_return
     equity_cash.append((np.sum(resultado_alocacao[i, :])) * equity_cash[i-1] + equity_cash[i-1])
 
-
 # Building Equity Curve - Benchmark
 equity_benchmark =[100]
 for i, day in enumerate(stock_data.dates[1:], start=1):
     day_return = backtest.calculate_return(stock_data.price_matrix[i-1, 6], stock_data.price_matrix[i, 6])
     equity_benchmark.append(day_return * equity_benchmark[i-1] + equity_benchmark[i-1])
 
-# print('Dimensionando o bova 11')
-# print(len(equity_benchmark))
-# print(len(equity))
-# print(len(equity_cash))
-
+# Print de avaliacao da estratégia
 print('\n STRATEGY EVALUATION \n')
 print(f'Total Return Benchmark {st_eval.total_return(stock_data.price_matrix[:,6])}')
 print(f'Profit Factor Benchmark {st_eval.profit_factor(stock_data.price_matrix[:,6])}')
