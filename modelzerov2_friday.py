@@ -23,11 +23,6 @@ file_path = ambiente_local + data_path
 stock_data = StockData(file_path)
 weekdays = [StockData.date_to_weekday(date) for date in stock_data.dates]
 
-print('TESTES')
-print(cdi_data[0:13,:])
-print(type(cdi_data))   
-print(type(stock_data.dates[0]))
-
 assets_trading = 'Ativos backtest: '
 for ticker in stock_data.tickers:
     assets_trading += ticker+' , '
@@ -74,7 +69,7 @@ for i, day in enumerate(stock_data.dates):
     else:
         cash = 1 - np.sum(capital_alocacao[i, :-1])
         capital_alocacao[i, -1] = cash
-print(capital_alocacao[30:60, 0:6])                
+print('\n',capital_alocacao[30:60, 0:6])                
 
 # Building Equity Curve
 equity =[100]
@@ -90,21 +85,20 @@ for i, day in enumerate(stock_data.dates[1:], start=1):
 equity_cash =[100]
 date_structure = backtest.datestring_tostruct(stock_data.dates)
 for i, day in enumerate(stock_data.dates[1:], start=1):
-    for i2 in range(capital_alocacao.shape[1]):
-        if i2 == (capital_alocacao.shape[1]-1): # if it is cash
-    
-            # print(f'mês: {date_structure[i,1]}', f'ano: {date_structure[i,2]}')
-            linhas_correspondentes = cdi_data[(cdi_data[:, 2] == date_structure[i,1]) & (cdi_data[:, 3] == date_structure[i,2])]
-            # print(linhas_correspondentes)
-            # print(linhas_correspondentes[0][1])    
 
+    for i2 in range(capital_alocacao.shape[1]):
+
+        if i2 == (capital_alocacao.shape[1]-1): # if it is cash
+            linhas_correspondentes = cdi_data[(cdi_data[:, 2] == date_structure[i,1]) & (cdi_data[:, 3] == date_structure[i,2])]
             position_ticker = capital_alocacao[i, i2]
             day_return = (linhas_correspondentes[0][1]+1)**(1/252)-1
             resultado_alocacao[i, i2] = position_ticker*day_return
+
         elif stock_data.price_matrix[i-1, i2] != 0: 
             position_ticker = capital_alocacao[i, i2]
             day_return = backtest.calculate_return(stock_data.price_matrix[i-1, i2], stock_data.price_matrix[i, i2])
             resultado_alocacao[i, i2] = position_ticker*day_return
+
     equity_cash.append((np.sum(resultado_alocacao[i, :])) * equity_cash[i-1] + equity_cash[i-1])
 
 # Building Equity Curve - Benchmark
@@ -133,12 +127,13 @@ print(f'Maximum Drawndown with cash {st_eval.max_drawdown(equity_cash)}\n')
 equity = np.array(equity)
 equity_cash = np.array(equity_cash)
 result_column_stack = np.column_stack((equity, equity_cash, equity_benchmark))
+column_titles = ['Strategy Equity', 'Strategy with Cash', 'Benchmark']
 
 colors = ['blue', 'green', 'red']  
 plt.figure(figsize=(10,6))
 
 for i, color in enumerate(colors):
-    plt.plot(result_column_stack[:,i], color=color, label=f'Coluna {i+1}')
+    plt.plot(result_column_stack[:,i], color=color, label=column_titles[i])
 plt.title('Gráfico das colunas')
 plt.xlabel('Índice')
 plt.ylabel('Valor')
