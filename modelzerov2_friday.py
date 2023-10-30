@@ -3,11 +3,13 @@ import os
 
 from dotenv import load_dotenv
 from log_data import StockData
+from datetime import datetime
 
 import sys
 import backtest
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 import strategy_evaluation as st_eval
 
 ## upload data
@@ -109,16 +111,19 @@ for i, day in enumerate(stock_data.dates[1:], start=1):
 
 # Print de avaliacao da estratégia
 print('\n STRATEGY EVALUATION \n')
+
 print(f'Total Return Benchmark {st_eval.total_return(stock_data.price_matrix[:,6])}')
 print(f'Profit Factor Benchmark {st_eval.profit_factor(stock_data.price_matrix[:,6])}')
 print(f'Trade Accuracy Benchmark {st_eval.percentage_positive_trades(stock_data.price_matrix[:,6])}')
 print(f'Maximum Drawndown Benchmark {st_eval.max_drawdown(stock_data.price_matrix[:,6])}')
 print('\n#### // ####\n')
+
 print(f'Total Return {st_eval.total_return(equity)}')
 print(f'Profit Factor {st_eval.profit_factor(equity)}')
 print(f'Trade Accuracy {st_eval.percentage_positive_trades(equity)}')
 print(f'Maximum Drawndown {st_eval.max_drawdown(equity)}\n')
 print('\n#### // ####\n')
+
 print(f'Total Return with cash {st_eval.total_return(equity_cash)}')
 print(f'Profit Factor with cash {st_eval.profit_factor(equity_cash)}')
 print(f'Trade Accuracy with cash {st_eval.percentage_positive_trades(equity_cash)}')
@@ -132,12 +137,33 @@ column_titles = ['Strategy Equity', 'Strategy with Cash', 'Benchmark']
 colors = ['blue', 'green', 'red']  
 plt.figure(figsize=(10,6))
 
-for i, color in enumerate(colors):
-    plt.plot(result_column_stack[:,i], color=color, label=column_titles[i])
-plt.title('Gráfico das colunas')
-plt.xlabel('Índice')
-plt.ylabel('Valor')
-plt.legend() 
-plt.show()
+# for i, color in enumerate(colors):
+#     plt.plot(result_column_stack[:,i], color=color, label=column_titles[i])
+# plt.title('Gráfico das colunas')
+# plt.xlabel('Índice')
+# plt.ylabel('Valor')
+# plt.legend() 
+# plt.show()
+
 
 # colocar data no grafico de simulacao
+
+# datestring = np.array(stock_data.dates)
+print(type(stock_data.dates))
+dates = [datetime.strptime(date, '%Y-%m-%d') for date in stock_data.dates]
+for i, color in enumerate(colors):
+    plt.plot(dates, result_column_stack[:,i], color=color, label=column_titles[i])
+
+plt.title('Gráfico das colunas')
+plt.xlabel('Data')
+plt.ylabel('Valor')
+plt.legend()
+
+# Configura o formato da data no eixo x
+plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=150))  # Ajuste o intervalo conforme necessário
+
+# Rotação das datas no eixo x para melhor visualização
+plt.gcf().autofmt_xdate()
+
+plt.show()

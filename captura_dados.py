@@ -4,10 +4,23 @@ import time
 import sys
 import os
 
+import pandas as pd
 from dotenv import load_dotenv
 
-ticker_list = ['VALE3','PETR4','ITUB4','BBDC4','BBAS3','ELET3', 'BOVA11', 
-               'ABEV3','WEGE3','ITSA4','RENT3','JBSS3','RADL3', 'CSNA3' , 'EQTL3']
+def valores_unicos_df(dataframe):
+    valores_unicos = []
+    for coluna in dataframe.columns[1:]:
+        valores_unicos_coluna = list(dataframe[coluna].unique())
+        valores_unicos.extend(valores_unicos_coluna)
+    valores_unicos = list(set(valores_unicos))
+    return valores_unicos
+
+stocks = pd.read_csv('portfolio_quant.csv', delimiter=',', header=None)
+ticker_list = valores_unicos_df(stocks)
+print(len(ticker_list))
+
+# ticker_list = ['VALE3','PETR4','ITUB4','BBDC4','BBAS3','ELET3', 'BOVA11', 
+#                'ABEV3','WEGE3','ITSA4','RENT3','JBSS3','RADL3', 'CSNA3' , 'EQTL3']
 
 load_dotenv()
 endpoint = os.getenv('ENDPOINT')
@@ -19,8 +32,8 @@ data = {}
 for ticker in ticker_list:
     print(ticker)
     parameters = {
-            "period_init": "2022-08-01",
-            "period_end": "2023-10-20"
+            "period_init": "2010-01-01",
+            "period_end": "2023-10-25"
         }
         
     headers = { 'Authorization': f'Bearer {token}' }
@@ -42,9 +55,9 @@ for ticker in ticker_list:
         print(e.args)
 
 # arquivo txt
-with open('acoes_precos_cartor.txt', 'w') as file:
+with open('prices_portfolioquant.txt', 'w') as file:
     for ticker, values in data.items():
         if values:  # verifica se os valores não são None
             for date, close_price in values.items():
-                line = f"{ticker}, {date}, {close_price}\n"
+                line = f"{ticker},{date},{close_price}\n"
                 file.write(line)
