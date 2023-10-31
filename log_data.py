@@ -141,7 +141,6 @@ class StockData:
         print("Price Matrix:")
         print(self.price_matrix)
 
-    def date_to_weekday(date_str):
-        date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+    def date_to_weekday(date_timestamp):
         days = ["segunda", "terça", "quarta", "quinta", "sexta", "sábado", "domingo"]
-        return days[date_obj.weekday()]            
+        return days[date_timestamp.weekday()]          
