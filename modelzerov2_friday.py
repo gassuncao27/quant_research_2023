@@ -2,7 +2,7 @@
 import os
 
 from dotenv import load_dotenv
-from log_data import StockData
+from log_data import StockData2
 from datetime import datetime
 
 import sys
@@ -22,8 +22,8 @@ data_path = 'acoes_precos_last.txt'
 
 cdi_data = backtest.cdidata_extract(ambiente_local+datapath_cdi)
 file_path = ambiente_local + data_path
-stock_data = StockData(file_path)
-weekdays = [StockData.date_to_weekday(date) for date in stock_data.dates]
+stock_data = StockData2(file_path)
+weekdays = [StockData2.date_to_weekday(date) for date in stock_data.dates]
 
 assets_trading = 'Ativos backtest: '
 for ticker in stock_data.tickers:

@@ -3,7 +3,7 @@ import os
 import chardet
 
 from dotenv import load_dotenv
-from log_data import LogData, StockData
+from log_data import StockData2
 
 import chardet
 import sys
@@ -31,8 +31,8 @@ print(ambiente_local)
 print(data_path )
 
 file_path = ambiente_local + data_path
-stock_data = StockData(file_path)
-weekdays = [StockData.date_to_weekday(date) for date in stock_data.dates]
+stock_data = StockData2(file_path)
+weekdays = [StockData2.date_to_weekday(date) for date in stock_data.dates]
 
 # strategy develop // study
 for j in range(len(stock_data.tickers)):
