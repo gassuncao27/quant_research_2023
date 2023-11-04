@@ -53,10 +53,13 @@ for i, day in enumerate(stock_data.dates):
             if contagem[i2] > int(periodo_position): # se tempo de posição se excede vende
                 capital_alocacao[i, i2] = 0
                 contagem[i2] = 0
+                cash += capital_alocacao[i-1][i2]
             # verificação para abertura de nova posição
             if weekdays[i] == 'sexta': # pode ser segunda tbm
                 weekly_return = backtest.calculate_return(stock_data.price_matrix[i-5, i2], stock_data.price_matrix[i-1, i2])
                 if weekly_return < retorno_treshold*-1:
+                    if contagem[i2] != 0:
+                        cash += capital_alocacao[i-1][i2]
                     capital_alocacao[i, i2], cash = backtest.simple_update_capital(cash, "buy")
                     contagem[i2] = 0
             else:
@@ -66,7 +69,7 @@ for i, day in enumerate(stock_data.dates):
         print(cash)
         sys.exit()
     else:
-        cash = 1 - np.sum(capital_alocacao[i, :-1])
+        # cash = 1 - np.sum(capital_alocacao[i, :-1])
         capital_alocacao[i, -1] = cash
 print('\n',capital_alocacao[30:60, 0:6])                
 

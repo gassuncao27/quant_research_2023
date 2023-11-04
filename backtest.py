@@ -9,12 +9,12 @@ def calculate_return(start_price, end_price):
 
 
 def simple_update_capital(cash, direction):
-    if direction == "buy" and cash > 0.10:
+    if direction == "buy" and cash >= 0.10:
         cash -= 0.10
-        return 0.10, cash
+        return 0.10, round(cash, 5)
     elif direction == "sell" and cash < 2.00:
         cash += 0.10
-        return -0.10, cash
+        return -0.10, round(cash, 5)
     return 0, cash
 
 

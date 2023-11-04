@@ -41,7 +41,7 @@ resultado_alocacao = np.zeros((stock_data.price_matrix.shape[0], stock_data.pric
 capital_alocacao[:, -1] = 1
 
 
-# estratégia = comprar na segunda ou na sexta feira e permanecer por x dias se a ação cair x % nos x dias anteriores
+# estratégia = comprar na sexta feira e permanecer por x dias se a ação cair x % nos 5 dias anteriores
 retorno_treshold = 0.01
 periodo_position = input("Nr de dias posicionado: ")
 cash = 1
@@ -71,7 +71,8 @@ for i, day in enumerate(stock_data.dates):
     else:
         cash = 1 - np.sum(capital_alocacao[i, :-1])
         capital_alocacao[i, -1] = cash
-print('\n',capital_alocacao[30:60, 0:6])                
+# print('\n',capital_alocacao[30:60, 0:6])                
+plt.plot(capital_alocacao[:,-1])
 
 # Building Equity Curve
 equity =[100]
