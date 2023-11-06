@@ -20,8 +20,8 @@ import backtest
 load_dotenv()
 
 # VARIAVEIS GLOBAIS BACKTEST
-retorno_treshold = -0.025
-periodo_position = 5 
+retorno_treshold = float(input("\nTreshold Variação: "))
+periodo_position = int(input('Qtd dias posicionado: ')) 
 
 
 ## upload data
@@ -38,7 +38,6 @@ stock_data.dates = stock_data.dates[:-2]
 stock_data.price_matrix = stock_data.price_matrix[:-2, :]
 valores_nao_comuns = [valor for valor in tickers_strategy if valor not in stock_data.tickers]
 weekdays = [StockData.date_to_weekday(date) for date in stock_data.dates]
-print(valores_nao_comuns)
 
 
 # Inicio do piloto / demonstratti)
@@ -143,29 +142,49 @@ for i, day in enumerate(stock_data.dates[1:], start=1):
     equity_benchmark_cash.append( (day_return * equity_benchmark_cash[i-1]*0.5) + (day_return_cash * equity_benchmark_cash[i-1]*0.5) + equity_benchmark_cash[i-1])
 
 
-# # plot curvas
-# equity = np.array(equity)
-# equity_cash = np.array(equity_cash)
-# equity_benchmark = np.array(equity_benchmark) 
-# equity_benchmark_cash = np.array(equity_benchmark_cash)
-# result_column_stack = np.column_stack((equity, equity_cash, equity_benchmark, equity_benchmark_cash))
-# column_titles = ['Strategy Equity', 'Strategy with Cash', 'Benchmark', 'Benchmark with 0.5 cash']
+# Print de avaliacao da estratégia
+print('\n AVALIAÇÃO BACKTESTS \n')
 
-# colors = ['blue', 'green', 'red', 'black']  
-# plt.figure(figsize=(10,6))
+column_titles = ['Strategy', 'Strategy with Cash', 'BOVA', 'BOVA & CASH 50/50']
+curva_analisada = [equity, equity_cash, equity_benchmark, equity_benchmark_cash]
 
-# # datestring = np.array(stock_data.dates)
-# dates = stock_data.dates
-# for i, color in enumerate(colors):
-#     plt.plot(dates, result_column_stack[:,i], color=color, label=column_titles[i])
-# plt.title('Gráfico das colunas')
-# plt.xlabel('Data')
-# plt.ylabel('Valor')
-# plt.legend()
-# plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-# plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=150))  
-# plt.gcf().autofmt_xdate()
-# plt.show()
+for i, capital in enumerate (curva_analisada):
+    print(f'Analise: {column_titles[i]}')
+    print(f'Retorno Total {st_eval.total_return(capital)}')
+    print(f'Retorno Anual {round(st_eval.calcular_retorno_anualizado(capital), 2)}')
+    print(f'Volatilidade Anual {round(st_eval.calcular_vol_negativos(capital), 2)}')
+    print(f'Dias Positivos {st_eval.percentage_positive_trades(capital)}%')
+    print(f'Drawndown Máximo {st_eval.max_drawdown(capital)*-1}')
+    print(f'Sharpe Ratio {round(st_eval.calcular_retorno_anualizado(capital) / st_eval.calcular_vol_negativos(capital), 2)}\n')
+    print('\n#### // ####\n')
+
+
+
+# plot curvas
+equity = np.array(equity)
+equity_cash = np.array(equity_cash)
+equity_benchmark = np.array(equity_benchmark) 
+equity_benchmark_cash = np.array(equity_benchmark_cash)
+result_column_stack = np.column_stack((equity, equity_cash, equity_benchmark, equity_benchmark_cash))
+column_titles = ['Strategy Equity', 'Strategy with Cash', 'Benchmark', 'Benchmark with 0.5 cash']
+
+colors = ['blue', 'green', 'red', 'black']  
+plt.figure(figsize=(10,6))
+
+# datestring = np.array(stock_data.dates)
+dates = stock_data.dates
+for i, color in enumerate(colors):
+    plt.plot(dates, result_column_stack[:,i], color=color, label=column_titles[i])
+plt.title('Gráfico das colunas')
+plt.xlabel('Data')
+plt.ylabel('Valor')
+plt.legend()
+plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=150))  
+plt.gcf().autofmt_xdate()
+plt.show()
+
+# sys.exit()
 
 # 2 curvas de capital
 # insignia e mach5
@@ -277,33 +296,32 @@ for i, capital in enumerate (curva_analisada):
     print('\n#### // ####\n')
 
 
+# plot curvas
+equity = np.array(equity_benchmark_cash)
+equity_cash = np.array(equity_cash)
+equity_benchmark = np.array(insignia_pl) 
+equity_benchmark_cash = np.array(mach5_pl)
 
-# # plot curvas
-# equity = np.array(equity_benchmark_cash)
-# equity_cash = np.array(equity_cash)
-# equity_benchmark = np.array(insignia_pl) 
-# equity_benchmark_cash = np.array(mach5_pl)
+# result_column_stack = np.column_stack((equity, equity_cash, equity_benchmark, equity_benchmark_cash))
+# column_titles = ['BOVA & CASH 50/50', 'Strategy with Cash', 'Insignia', 'Mach5']
 
-# # result_column_stack = np.column_stack((equity, equity_cash, equity_benchmark, equity_benchmark_cash))
-# # column_titles = ['BOVA & CASH 50/50', 'Strategy with Cash', 'Insignia', 'Mach5']
+result_column_stack = np.column_stack((equity_cash, equity_benchmark_cash))
+column_titles = ['Strategy with Cash', 'Mach5']
 
-# result_column_stack = np.column_stack((equity_cash, equity_benchmark_cash))
-# column_titles = ['Strategy with Cash', 'Mach5']
+# colors = ['blue', 'green', 'red', 'black']  
 
-# # colors = ['blue', 'green', 'red', 'black']  
+colors = ['blue', 'green']  
+plt.figure(figsize=(10,6))
 
-# colors = ['blue', 'green']  
-# plt.figure(figsize=(10,6))
-
-# # datestring = np.array(stock_data.dates)
-# dates = stock_data.dates
-# for i, color in enumerate(colors):
-#     plt.plot(dates, result_column_stack[:,i], color=color, label=column_titles[i])
-# plt.title('Gráfico das colunas')
-# plt.xlabel('Data')
-# plt.ylabel('Valor')
-# plt.legend()
-# plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-# plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=30))  
-# plt.gcf().autofmt_xdate()
-# plt.show()
+# datestring = np.array(stock_data.dates)
+dates = stock_data.dates
+for i, color in enumerate(colors):
+    plt.plot(dates, result_column_stack[:,i], color=color, label=column_titles[i])
+plt.title('Gráfico das colunas')
+plt.xlabel('Data')
+plt.ylabel('Valor')
+plt.legend()
+plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=30))  
+plt.gcf().autofmt_xdate()
+plt.show()
