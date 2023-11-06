@@ -195,11 +195,11 @@ import warnings
 warnings.filterwarnings('ignore')
 
 db = mysql.connector.connect(
-    user= 'cartor',
-    password= 'Cartor1212!',
-    host= "cartor.mysql.dbaas.com.br",
-    port= 3306,
-    database= 'cartor',
+    user=os.getenv('MYSQL_USER'),
+    password=os.getenv('MYSQL_PASSWORD'),
+    host=os.getenv('MYSQL_HOST'),
+    port=os.getenv('MYSQL_PORT'),
+    database=os.getenv('MYSQL_DATABASE'),
     )
 
 msql = pd.read_sql_query("SELECT * from cota_fundos", db)
