@@ -1,3 +1,5 @@
+import numpy as np
+
 # Indicators - strategy evaluation
 
 def total_return(equity):
@@ -8,9 +10,35 @@ def annualized_return(prices, periods_per_year):
     overall_return = total_return(prices)
     return (1 + overall_return) ** (periods_per_year / total_periods) - 1
 
+def calcular_retorno_anualizado(curva_de_capital):
+    valor_inicial = curva_de_capital[0]
+    valor_final = curva_de_capital[-1]
+    total_periodos = len(curva_de_capital) / 252
+    retorno_anualizado = (valor_final / valor_inicial) ** (1 / total_periodos) - 1
+    return retorno_anualizado
+
 def annualized_volatility(prices, periods_per_year):
     returns = [prices[i] / prices[i-1] - 1 for i in range(1, len(prices))]
     return (sum([(x - sum(returns) / len(returns)) ** 2 for x in returns]) / len(returns)) ** 0.5 * (periods_per_year ** 0.5)
+
+def calcular_volatilidade(curva_de_capital):
+    retornos = [(curva_de_capital[i] - curva_de_capital[i-1]) / curva_de_capital[i-1] for i in range(1, len(curva_de_capital))]
+    retornos_array = np.array(retornos)
+    volatilidade = np.std(retornos_array, ddof=1)  # ddof=1 fornece a estimativa corrigida (amostral)
+    volatilidade_anualizada = volatilidade * np.sqrt(252)
+    return volatilidade_anualizada
+
+def calcular_vol_negativos(curva_de_capital):
+    retornos = [(curva_de_capital[i] - curva_de_capital[i-1]) / curva_de_capital[i-1] for i in range(1, len(curva_de_capital))]
+    retornos_negativos = [retorno for retorno in retornos if retorno < 0]
+    
+    if not retornos_negativos:
+        return 0  
+    else:
+        retornos_negativos_array = np.array(retornos_negativos)
+        volatilidade = np.std(retornos_negativos, ddof=1)
+        volatilidade_anualneg = volatilidade * np.sqrt(252)        
+    return volatilidade_anualneg
 
 def sharpe_ratio(prices, periods_per_year, risk_free_rate=0.0):
     ret_ann = annualized_return(prices, periods_per_year)
