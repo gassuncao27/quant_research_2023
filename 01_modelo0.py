@@ -85,7 +85,7 @@ for i, day in enumerate(stock_data.dates):
                     preco_sextapassada = stock_data.price_matrix[i-4, stock_data.tickers.index(tickers)]
                     retorno_semanal = backtest.calculate_return(preco_sextapassada, preco_ontem)
 
-                    if retorno_semanal > retorno_treshold and cash >= 0.10:
+                    if retorno_semanal < retorno_treshold and cash >= 0.10:
                         capital_alocacao[i, stock_data.tickers.index(tickers)], cash = backtest.simple_update_capital(cash, 'buy')                        
                         contagem_dias[stock_data.tickers.index(tickers)] = 0
                     
