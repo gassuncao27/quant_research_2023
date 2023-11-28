@@ -158,57 +158,24 @@ def upload_infofin(fData_fin): # retorna os trimestres da empresa
     tipo_balanco2 = re.sub(r'(DF)(Consolidado|Individual)', r'\1 \2', tipo_balanco)
     return tipo_balanco, tipo_balanco2, trimestres_upload
 
-def balance_type(fEmpresa, fTrimestre): # seleciona o tipo de balanco existente
-    tipo_balanco = 'ERROR'   
-    for key in fEmpresa[fTrimestre[0]]:
-        key2 = re.sub(r'(DF)(Consolidado|Individual)', r'\1 \2', key)       
-        try:
-             pvalor = fEmpresa[fTrimestre[-1]][key][key2+' - Demonstração do Resultado']['3.01']['vl_conta']
-             if pvalor != 0: 
-                 tipo_balanco = key
-        except KeyError:
-             pvalor = fEmpresa[fTrimestre[0]][key][key2+' - Demonstração do Resultado']['3.01']['vl_conta']
-             if pvalor != 0: 
-                 tipo_balanco = key
-                 break
-    novalista_trimestres = []
-    if tipo_balanco == 'DFConsolidado':
-        for trimestre in fTrimestre:
-            if len(fEmpresa[trimestre].get(tipo_balanco, {})) != 0:
-                    novalista_trimestres.append(trimestre) 
-        fTrimestre = novalista_trimestres
-    return tipo_balanco, fTrimestre
-
 def get_balance_type(fEmpresa, fTrimestre): # seleciona o tipo de balanco existente
     tipo_balanco = 'ERROR'
     for key in fEmpresa[fTrimestre[0]]:
         key2 = re.sub(r'(DF)(Consolidado|Individual)', r'\1 \2', key)       
-        # print(key)
-        # print(key2)        
         try:
             nr_trimestre = 0
             while nr_trimestre < 8:
-                pvalor = fEmpresa[fTrimestre[nr_trimestre]][key][key2+' - Demonstração do Resultado']['3.01']['vl_conta']
+                pvalor = fEmpresa[fTrimestre[nr_trimestre]][key][key2+' - Demonstração do Resultado']['3.05']['vl_conta']
                 if pvalor !=0: 
                     nr_trimestre+=1
                 else:
                     break
             if nr_trimestre == 8:
                 tipo_balanco = key
-            # print(key)
-            # print(nr_trimestre)
-
         except KeyError:
             print(f'Empresa não possui {key} suficiente')
-        #      pvalor = fEmpresa[fTrimestre[0]][key][key2+' - Demonstração do Resultado']['3.01']['vl_conta']
-        #      if pvalor != 0: 
-        #          tipo_balanco = key
-        #          break
         if tipo_balanco != 'ERROR': break
-    
     novalista_trimestres = []
-    # if tipo_balanco == 'DFConsolidado':
-    # for trimestre in fTrimestre:
     for i, trimestre in enumerate(fTrimestre):        
         if len(fEmpresa[trimestre].get(tipo_balanco, {})) != 0:
                 novalista_trimestres.append(trimestre) 
@@ -284,39 +251,32 @@ def transform_FDC_tri(fDicionario, fConta, fQuarter, fQtdtrimestres, fTrimestres
     return f_valor
 
 
-stock = ['ALOS3']
-
-stock = [ 
-            'VALE3', 'PETR4', 'ELET3', 'ABEV3', 'RENT3', 'ITSA4', 'B3SA3', 'WEGE3', 'BPAC11','EQTL3',
-            'PRIO3', 'SUZB3', 'RADL3', 'RAIL3', 'GGBR4', 'UGPA3', 'RDOR3', 'JBSS3', 'VBBR3', 'BRFS3',
-            'VIVT3', 'CSAN3', 'ENEV3', 'HAPV3', 'CMIG4', 'SBSP3', 'TOTS3', 'KLBN11','CPLE6','ENGI11',
-            'EMBR3', 'HYPE3', 'LREN3', 'TIMS3', 'ASAI3', 'CCRO3', 'EGIE3', 'CSNA3', 'CMIN3', 'GOAU4', 
-            'TAEE11','RRRP3', 'MULT3', 'CPFE3', 'MGLU3', 'FLRY3', 'YDUQ3', 'AZUL4', 'CRFB3', 'CYRE3', 
-            'COGN3', 'BRAP4', 'BRKM5','IGTI11', 'CIEL3' # PAREI EM BRADESPAR
-        ]
+stock = ['AESB3']
 
 # stock = [
-#      'VALE3', 'PETR4',  'ELET3',  'ABEV3', 'RENT3', 'ITSA4',  # 'B3SA3', 'ITUB4','BBDC4', 'BBAS3',
-#      'WEGE3', 'BPAC11','EQTL3', 'PRIO3', 'SUZB3', 'RADL3', 'RAIL3', 'GGBR4', 'UGPA3', #'RDOR3',
-#      'JBSS3', 'VBBR3', 'BRFS3',   'VIVT3', 'CSAN3', 'ENEV3', 'HAPV3', 'CMIG4', 'SBSP3', #'BBSE3',
-#      'TOTS3', 'KLBN11','CPLE6', 'ENGI11','EMBR3', 'HYPE3', 'LREN3', #' TIMS3', #'ALOS3', 'ASAI3', 
-#      'CCRO3'] 
-
-# stock = [ 'EGIE3', 'CSNA3', #'CMIN3', #'GOAU4', # 'SANB11','TAEE11','RRRP3', 
-#      'MULT3', 'CPFE3', 'MGLU3', 'FLRY3', 'YDUQ3', 'AZUL4', 'CRFB3', 'CYRE3', 'COGN3', # 'BRAP4', 
-#      'BRKM5',  'IGTI11', 'CIEL3',  'MRVE3', 'SLCE3', 'USIM5', # 'RECV3','SMTO3','RAIZ4','VAMO3',
-#      'ARZZ3', 'MRFG3', 'DXCO3', 'ALPA4', 'BEEF3', 'GOLL4', 'EZTC3', # 'SOMA3','IRBR3',  'LWSA3',    
-#      'CVCB3', 'PCAR3'] # 'PETZ3','BHIA3',
+#     'VALE3', 'PETR4', 'ELET3', 'ABEV3', 'RENT3', 'ITSA4', 'B3SA3', 'WEGE3', 'BPAC11','EQTL3',
+#     'PRIO3', 'SUZB3', 'RADL3', 'RAIL3', 'GGBR4', 'UGPA3', 'RDOR3', 'JBSS3', 'VBBR3', 'BRFS3',
+#     'VIVT3', 'CSAN3', 'ENEV3', 'HAPV3', 'CMIG4', 'SBSP3', 'TOTS3', 'KLBN11','CPLE6','ENGI11',
+#     'EMBR3', 'HYPE3', 'LREN3', 'TIMS3', 'ASAI3', 'CCRO3', 'EGIE3', 'CSNA3', 'CMIN3', 'GOAU4', 
+#     'TAEE11','RRRP3', 'MULT3', 'CPFE3', 'MGLU3', 'FLRY3', 'YDUQ3', 'AZUL4', 'CRFB3', 'CYRE3', 
+#     'COGN3', 'BRAP4', 'BRKM5','IGTI11', 'CIEL3', "TTEN3", "ABCB4", "AERI3", "AALR3", "ALPA4",
+#     "ALUP11","AMBP3", "ANIM3", "ARZZ3", "ARML3", "BMOB3", "CEAB3", "CLSA3", "CSMG3", "CURY3", 
+#     "CVCB3", "DASA3", "DXCO3", "PNVL3", "DIRR3", "ECOR3", "ENAT3", "ESPA3", "EVEN3", "EZTC3", 
+#     "FESA4", "FRAS3", "GFSA3", "GOLL4", "GGPS3", "GRND3", "SBFG3", "GUAR3", "HBSA3", "INTB3",
+#     "MYPK3", "RANI3", "JHSF3", "KEPL3", "LAVV3", "LWSA3", "LOGG3", "LOGN3", "POMO4", "MRFG3", 
+#     "MATD3", "LEVE3", "BEEF3", "MOVI3", "MRVE3", "MLAS3", "ODPV3", "ONCO3", "ORVR3", "PCAR3", 
+#     "PGMN3", "RECV3", "PETZ3", "PLPL3", "PTBL3", "POSI3", "QUAL3", "LJQQ3", "RAPT4", "ROMI3",
+#     "SAPR11","STBP3", "SEQL3", "SEER3", "SIMH3", "SLCE3", "SMFT3", "TASA4", "TGMA3", "TEND3", 
+#     "TRIS3", "TUPY3", "UNIP6", "USIM5", "VLID3", "VULC3", "WIZC3", "ZAMP3" ]
 
 for y in range(len(stock)):
-    print(y)
     print(stock[y])
     
     info_input = [] 
     info_input.append(stock[y])
     document = finddoc_byequity(db, collection, stock[y])
     doc_stock = document.next() 
-    id_empresa = doc_stock['_id']; print(id_empresa)
+    id_empresa = doc_stock['_id']; 
     tipo_balanco1, tipo_balanco2, trimestres_lista = upload_infofin(doc_stock) 
 
     # ebit - calculo 
@@ -374,14 +334,11 @@ for y in range(len(stock)):
     document_inforesultados = finddoc_by_codcvm(db, 'divulgacaoinfo_resultados', doc_stock['cod_cvm'], id_empresa, '_30/06/2023')
     nome_cia = document_inforesultados['nome_empresa']
     hora_envioresultado = document_inforesultados['hora_envio']
-    print(document_inforesultados)
 
     info_input.append(converterstr_data(hora_envioresultado) + timedelta(extrair_hora(hora_envioresultado))) # '2023-08-10' # 31
     info_input.append('2023-10-10') # 32
     info_input.append(get_adjclosing_price(df_stocks, str(info_input[31]), stock[y])) # 33
-    print(info_input[33])
     info_input.append(get_adjclosing_price(df_stocks, info_input[32], stock[y])) # 34
-    print(info_input[34])
     info_input.append(round(info_input[34]/ info_input[33]- 1, 4)) # 35
 
     preco_inicial = get_adjclosing_price(df_stocks, str(info_input[31]), 'BOVA11')
