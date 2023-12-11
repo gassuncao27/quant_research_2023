@@ -287,7 +287,7 @@ stock = [
     "SAPR11","STBP3", "SEQL3", "SEER3", "SIMH3", "SLCE3", "SMFT3", "TASA4", "TGMA3", "TEND3", 
     "TRIS3", "TUPY3", "UNIP6", "USIM5", "VLID3", "VULC3", "WIZC3", "ZAMP3" ]
 
-stock = ['VALE3', 'PETR4']
+# stock = ['VALE3', 'PETR4']
 
 for y in range(len(stock)):
     print(stock[y])
@@ -300,18 +300,20 @@ for y in range(len(stock)):
     tipo_balanco1, tipo_balanco2, trimestres_lista = upload_infofin(doc_stock) 
 
     # ebit - calculo 
-    ebit = []
+    ebt = []
     for i in range(len(trimestres_lista)):
-        ebit.append(transform_Dfp_tri(doc_stock, '3.05', i, len(trimestres_lista), trimestres_lista, tipo_balanco1, tipo_balanco2))
-    ebit = np.array(ebit)
-    info_input.append(round(ebit[0]/ebit[0+4], 2))
-    info_input.append(round(ebit[1]/ebit[1+4], 2))
-    info_input.append(round(ebit[2]/ebit[2+4], 2)) 
+        ebit_value = transform_Dfp_tri(doc_stock, '3.05', i, len(trimestres_lista), trimestres_lista, tipo_balanco1, tipo_balanco2)
+        financial_result = transform_Dfp_tri(doc_stock, '3.06', i, len(trimestres_lista), trimestres_lista, tipo_balanco1, tipo_balanco2)
+        ebt.append(ebit_value-financial_result)
+    ebt = np.array(ebt)
+    info_input.append(round(ebt[0]/ebt[0+4], 2))
+    info_input.append(round(ebt[1]/ebt[1+4], 2))
+    info_input.append(round(ebt[2]/ebt[2+4], 2)) 
     info_input.append(round(info_input[2] - info_input[1], 2))
     info_input.append(round(info_input[3] - info_input[2], 2))
-    info_input.append(round(np.sum(ebit[0:4])/np.sum(ebit[4:4+4]), 2)) # 6
-    info_input.append(round(np.sum(ebit[1:1+4])/np.sum(ebit[5:5+4]), 2)) # 7
-    info_input.append(round(np.sum(ebit[2:2+4])/np.sum(ebit[6:6+4]), 2)) # 8
+    info_input.append(round(np.sum(ebt[0:4])/np.sum(ebt[4:4+4]), 2)) # 6
+    info_input.append(round(np.sum(ebt[1:1+4])/np.sum(ebt[5:5+4]), 2)) # 7
+    info_input.append(round(np.sum(ebt[2:2+4])/np.sum(ebt[6:6+4]), 2)) # 8
     info_input.append(round(info_input[7] - info_input[8], 2)) # 9 
     info_input.append(round(info_input[6] - info_input[7], 2)) # 10
 
@@ -355,31 +357,17 @@ for y in range(len(stock)):
     nome_cia = document_inforesultados['nome_empresa']
     hora_envioresultado = document_inforesultados['hora_envio']
 
-    # info_input.append(converterstr_data(hora_envioresultado) + timedelta(extrair_hora(hora_envioresultado))) # '2023-08-10' # 31
+    # precos segundo trimestre
     info_input.append('2023-08-10') # 31    
     info_input.append('2023-10-10') # 32
-    # info_input.append(get_adjclosing_price(df_stocks, str(info_input[31]), stock[y])) # 33
-    # info_input.append(get_adjclosing_price(df_stocks, info_input[32], stock[y])) # 34
     info_input.append(get_closingprice(df_stocks, info_input[31], stock[y])) # 33
     info_input.append(get_closingprice(df_stocks, info_input[32], stock[y])) # 34
-    # print('')
-    # print(info_input[31], info_input[33], type(info_input[31]), type(info_input[33]))
-    # print(info_input[32], info_input[34], type(info_input[32]), type(info_input[34]))    
-    # print('')    
     info_input.append(round(info_input[34]/ info_input[33]- 1, 4)) # 35
 
-    # preco_inicial = get_adjclosing_price(df_stocks, str(info_input[31]), 'BOVA11')
-    # preco_final = get_adjclosing_price(df_stocks, info_input[32], 'BOVA11')
     preco_inicial = get_closingprice(df_stocks, info_input[31], 'BOVA11') 
     preco_final = get_closingprice(df_stocks, info_input[32], 'BOVA11')
-    # print('')
-    # print(preco_final)
-    # print(preco_inicial)    
-    # print('')    
     info_input.append(round(preco_final/ preco_inicial- 1, 4)) # 36
 
-    # preco_inicial = get_adjclosing_price(df_stocks, str(info_input[31]), 'SMAL11')
-    # preco_final = get_adjclosing_price(df_stocks, info_input[32], 'SMAL11')
     preco_inicial = get_closingprice(df_stocks, info_input[31], 'SMAL11') 
     preco_final = get_closingprice(df_stocks, info_input[32], 'SMAL11')    
     info_input.append(round(preco_final/ preco_inicial- 1, 4)) # 37
@@ -387,8 +375,6 @@ for y in range(len(stock)):
     # adicionando preços do 3trimestre
     info_input.append('2023-10-11') # 38    
     info_input.append('2023-12-01') # 39
-    # info_input.append(get_adjclosing_price(df_stocks, str(info_input[38]), stock[y])) # 40
-    # info_input.append(get_adjclosing_price(df_stocks, info_input[39], stock[y])) # 41
     info_input.append(get_closingprice(df_stocks, info_input[38], stock[y])) # 40
     info_input.append(get_closingprice(df_stocks, info_input[39], stock[y])) # 41
     info_input.append(round(info_input[41]/ info_input[40]- 1, 4)) # 42  
